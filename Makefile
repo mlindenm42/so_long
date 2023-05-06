@@ -6,7 +6,7 @@
 #    By: mlindenm <mlindenm@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/25 14:23:04 by mlindenm          #+#    #+#              #
-#    Updated: 2023/05/03 19:21:20 by mlindenm         ###   ########.fr        #
+#    Updated: 2023/05/06 10:51:49 by mlindenm         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,10 +25,12 @@ MLX_FLAGS	=	-lglfw -L ~/.brew/Cellar/glfw/3.3.8/lib
 LIBFT_PATH	=	libraries/libft
 LIBFT		=	$(LIBFT_PATH)/libft.a
 
+LEAK_PATH	=	LeakSanitizer/
+
 all: $(NAME)
 
 $(NAME): $(LIBFT) $(MLX) $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $(MLX) $(MLX_FLAGS) $(LIBFT) -Wno-gnu-include-next -I./LeakSanitizer/include -L./LeakSanitizer -llsan -lc++ -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJ) $(MLX) $(MLX_FLAGS) $(LIBFT) -o $(NAME)
 
 $(MLX):	$(MLX_PATH)
 	cd $(MLX_PATH); cmake -B build; cmake --build build -j4
@@ -36,10 +38,15 @@ $(MLX):	$(MLX_PATH)
 $(LIBFT): $(LIBFT_PATH)
 	make -C $(LIBFT_PATH)
 
+leak: $(LIBFT) $(MLX) $(OBJ) $(LEAK_PATH)
+	make -C $(LEAK_PATH)
+	$(CC) $(CFLAGS) $(OBJ) $(MLX) $(MLX_FLAGS) $(LIBFT) -Wno-gnu-include-next -I./LeakSanitizer/include -L./LeakSanitizer -llsan -lc++ -o $(NAME)
+
 clean:
 	@rm -rf $(OBJ)
 	@rm -rf $(MLX_PATH)/build;
 	@make fclean -C $(LIBFT_PATH)
+	@make fclean -C $(LEAK_PATH)
 
 fclean: clean
 	@rm -rf $(NAME)
